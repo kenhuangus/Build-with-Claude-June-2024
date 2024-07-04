@@ -188,7 +188,7 @@ async def analyze_and_fix_file(file_path, vulnerabilities, call_graph):
 
     response = await asyncio.to_thread(
         client.messages.create,
-        model="claude-3-haiku-20240307",
+        model="claude-3-5-sonnet-20240620",
         max_tokens=4000,
         messages=[{"role": "user", "content": prompt}]
     )
@@ -235,7 +235,7 @@ async def generate_security_report(vulnerabilities, file_analyses, full_call_gra
 
     response = await asyncio.to_thread(
         client.messages.create,
-        model="claude-3-haiku-20240307",
+        model="claude-3-5-sonnet-20240620",
         max_tokens=4000,
         messages=[{"role": "user", "content": prompt}]
     )
