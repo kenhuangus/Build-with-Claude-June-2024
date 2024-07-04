@@ -58,7 +58,7 @@ def static_analysis_tool(file_path):
         "code_smells": 5
     })
 
-async def nalyze_and_fix_file_with_advanced_tools(file_path, vulnerabilities):
+async def analyze_and_fix_file_with_advanced_tools(file_path, vulnerabilities):
     print(f"Analyzing and fixing vulnerabilities in {file_path} using Claude tools...")
     with open(file_path, 'r') as file:
         content = file.read()
