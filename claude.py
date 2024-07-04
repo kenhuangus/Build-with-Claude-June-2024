@@ -37,7 +37,7 @@ def vulnerability_database_tool(vulnerability_type):
     # Mock implementation
     mock_cve = {
         "sql_injection": {
-            "CVE-2021-1234": "SQL Injection vulnerability in Java JDBC",
+            "CVE-2024-1597": "SQL Injection vulnerability in Java JDBC",
             "CVE-2022-5678": "SQL Injection in Spring Framework"
         }
     }
@@ -260,7 +260,7 @@ async def generate_security_report_with_advanced_tools(vulnerabilities, file_ana
     """
 
     response = await client.messages.create(
-        model="claude-3.5-sonnet-20240620",
+        model="claude-3-5-sonnet-20240620",
         max_tokens=4000,
         messages=[{"role": "user", "content": prompt}]
     )
