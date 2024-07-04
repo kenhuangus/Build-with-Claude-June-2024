@@ -3,15 +3,14 @@ import subprocess
 import anthropic
 from dotenv import load_dotenv
 import os
+import re
 
 # Initialize Claude AI client
 load_dotenv()
 api_key = os.getenv('CLAUDE_API_KEY')
 if not api_key:
     raise ValueError("CLAUDE_API_KEY not found in the environment variables")
-
 client = anthropic.Client(api_key=api_key)
-
 
 # Tool definitions
 def code_analysis_tool(code_snippet):
@@ -61,55 +60,43 @@ def static_analysis_tool(file_path):
 
 async def analyze_and_fix_file_with_advanced_tools(file_path, vulnerabilities):
     print(f"Analyzing and fixing vulnerabilities in {file_path} using Claude tools...")
-    
     with open(file_path, 'r') as file:
         content = file.read()
     
-    vuln_summary = "\n".join([f"- Method: {method}, Line {line_number}: {line}" 
-                              for _, method, line, line_number in vulnerabilities 
+    vuln_summary = "\n".join([f"- Method: {method}, Line {line_number}: {line}"
+                              for _, method, line, line_number in vulnerabilities
                               if _==file_path])
     
     prompt = f"""
     Analyze and fix the following Java file that contains potential SQL injection vulnerabilities:
-
     File: {file_path}
-
     Vulnerabilities found:
     {vuln_summary}
-
     Complete file content:
     ```java
     {content}
     ```
-
     You have access to the following tools:
     1. code_analysis_tool(code_snippet): Analyzes a code snippet and returns potential issues.
     2. database_schema_tool(table_name): Returns the schema for a given table.
     3. vulnerability_database_tool(vulnerability_type): Checks for known CVEs related to a vulnerability type.
     4. code_execution_tool(code_snippet): Executes a code snippet and returns the result.
     5. static_analysis_tool(file_path): Performs static analysis on the file.
-
     Use these tools as needed to perform a thorough analysis and provide fixes.
-
     Please provide:
     1. An explanation of each SQL injection risk, using the tools to support your analysis.
     2. A complete fixed version of the entire Java file that addresses all vulnerabilities.
     3. An explanation of why the fixed version is safer for each change made.
     4. Test cases to verify the fixes for each vulnerability.
-
     Format your response as follows:
-    
     # Vulnerability Analysis
     [Your analysis here with complete vulnerable Java code rendered in markdown]
-
     # Fixed Java File
     ```java
     [Complete fixed Java file content here, make sure to have completed Java code in markdown]
     ```
-
     # Explanation of Fixes
     [Your explanation here]
-
     # Test Cases
     [Your test cases here]
     """
@@ -206,55 +193,44 @@ async def analyze_and_fix_file_with_advanced_tools(file_path, vulnerabilities):
             }
         ]
     )
-    
+
     return response.content[0].text
 
 async def generate_security_report_with_advanced_tools(vulnerabilities, file_analyses):
     print("Generating security report using Claude tools...")
-    
     vuln_summary = "\n".join([f"- {file}: {method} (Line {line_number})" for file, method, _, line_number in vulnerabilities])
-    
     detailed_analyses = []
     for file_path, analysis in file_analyses.items():
         vulnerable_code_match = re.search(r'# Vulnerability Analysis\s*(.*?)# Fixed Java File', analysis, re.DOTALL)
         fixed_code_match = re.search(r'# Fixed Java File\s*```java\s*(.*?)\s*```', analysis, re.DOTALL)
-        
         if vulnerable_code_match and fixed_code_match:
             vulnerable_code = vulnerable_code_match.group(1).strip()
             fixed_code = fixed_code_match.group(1).strip()
-            
             detailed_analyses.append(f"""
-## File: {file_path}
-
-### Vulnerable Code
-{vulnerable_code}
-
-### Fixed Code
-```java
-{fixed_code}
-```
-
-### Analysis
-{analysis}
-""")
+            ## File: {file_path}
+            ### Vulnerable Code
+            {vulnerable_code}
+            ### Fixed Code
+            ```java
+            {fixed_code}
+            ```
+            ### Analysis
+            {analysis}
+            """)
     
     detailed_analyses_str = "\n\n".join(detailed_analyses)
     
     prompt = f"""
     Generate a security report based on the following information:
-
     Vulnerabilities Found:
     {vuln_summary}
-
     Detailed File Analyses:
     {detailed_analyses_str}
-
     Please provide:
     1. An executive summary of the security state of the project.
     2. A detailed breakdown of each vulnerability found, including risk levels and potential impact.
     3. An action plan for addressing all identified issues, prioritized by risk level.
     4. Recommendations for improving the overall security posture of the project.
-
     Format your response as a well-structured markdown document suitable for presentation to both technical and non-technical stakeholders.
     Include the full vulnerable and fixed code for each file in your report.
     """
@@ -264,5 +240,19 @@ async def generate_security_report_with_advanced_tools(vulnerabilities, file_ana
         max_tokens=4000,
         messages=[{"role": "user", "content": prompt}]
     )
-    
+
     return response.content[0].text
+
+# Main execution loop (not provided in the original code, but you might want to add it)
+async def main():
+    # Example usage
+    vulnerabilities = [
+        ("example.java", "getUserData", "SELECT * FROM users WHERE id = " + userId, 42)
+    ]
+    file_analyses = await analyze_and_fix_file_with_advanced_tools("example.java", vulnerabilities)
+    report = await generate_security_report_with_advanced_tools(vulnerabilities, {"example.java": file_analyses})
+    print(report)
+
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(main())
