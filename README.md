@@ -1,4 +1,4 @@
-# Java SQL Injection Vulnerability Scanner Using Claud AI Service
+# Vulnerability Scanner Using Claud AI Service
 
 ## Overview
 
